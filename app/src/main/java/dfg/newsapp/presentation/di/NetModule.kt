@@ -14,7 +14,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class NetModule {
 
-    @Singleton
     @Provides
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
@@ -23,7 +22,6 @@ class NetModule {
             .build()
     }
 
-    @Singleton
     @Provides
     fun provideNewsAPIService(retrofit: Retrofit) : NewsApiService {
         return retrofit.create(NewsApiService::class.java)

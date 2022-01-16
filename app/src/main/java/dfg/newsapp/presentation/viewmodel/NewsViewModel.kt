@@ -11,14 +11,17 @@ import androidx.lifecycle.viewModelScope
 import dfg.newsapp.data.model.APIResponse
 import dfg.newsapp.data.util.Resource
 import dfg.newsapp.domain.usecase.GetNewsHeadlinesUseCase
+import dfg.newsapp.domain.usecase.GetSearchedNewsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import retrofit2.http.Query
 
 class NewsViewModel (
     private val app: Application,
-    private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase
+    private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase,
+    private val getSearchedNewsUseCase: GetSearchedNewsUseCase
 ): AndroidViewModel(app) {
-    private val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
+    val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
     fun getNewsHeadLines(country: String, page: Int) = viewModelScope.launch(Dispatchers.IO) {
         newsHeadLines.postValue(Resource.Loading())
@@ -33,8 +36,6 @@ class NewsViewModel (
         } catch (e: Exception) {
             newsHeadLines.postValue(Resource.Error(e.message.toString()))
         }
-
-
     }
 
     private fun isNetworkAvailable(context: Context?) : Boolean {
@@ -64,4 +65,25 @@ class NewsViewModel (
             }
         return false
         }
+
+    val searchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
+
+    fun searchNews (country: String, searchQuery: String, page: Int) = viewModelScope.launch {
+        searchedNews.postValue(Resource.Loading())
+
+        try {
+            if (isNetworkAvailable(app)) {
+                val response = getSearchedNewsUseCase.execute(
+                    country,
+                    searchQuery,
+                    page
+                )
+                searchedNews.postValue(response)
+            } else {
+                searchedNews.postValue(Resource.Error("No iternet connection"))
+            }
+        } catch (e: java.lang.Exception) {
+            searchedNews.postValue(Resource.Error(e.message.toString()))
+        }
+    }
 }
