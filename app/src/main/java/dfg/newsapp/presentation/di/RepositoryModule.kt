@@ -5,6 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dfg.newsapp.data.repository.NewsRepositoryImpl
+import dfg.newsapp.data.repository.dataSource.NewsLocalDataSource
 import dfg.newsapp.data.repository.dataSource.NewsRemoteDataSource
 import dfg.newsapp.domain.repository.NewsRepository
 import javax.inject.Singleton
@@ -16,8 +17,9 @@ class RepositoryModule {
     @Singleton
     @Provides
     fun provideNewsRepository (
-        newsRemoteDataSource: NewsRemoteDataSource
+        newsRemoteDataSource: NewsRemoteDataSource,
+        newsLocalDataSource: NewsLocalDataSource
     ) : NewsRepository {
-        return NewsRepositoryImpl(newsRemoteDataSource)
+        return NewsRepositoryImpl(newsRemoteDataSource, newsLocalDataSource)
     }
 }
