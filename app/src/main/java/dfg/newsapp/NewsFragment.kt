@@ -49,23 +49,19 @@ class NewsFragment : Fragment() {
         fragmentNewsBinding = FragmentNewsBinding.bind(view)
         viewModel = (activity as MainActivity).viewModel
         newsAdapter = (activity as MainActivity).newsAdapter
-        newsAdapter.setOnItemClickListener {
-            Log.e("TAG", "Item clicked")
-            val bundle = Bundle().apply {
-                putSerializable("selected_article", it)
-            }
-            findNavController().navigate(R.id.action_newsFragment_to_infoFragment, bundle)
-        }
-        newsAdapter.setOnNewClickListener(object : NewsAdapter.OnNewClickListener {
-            override fun onClick(position: Int, model: Article) {
+
+        newsAdapter.setOnClickListener(object : NewsAdapter.OnClickListener {
+            override fun onClick(position: Int, article: Article) {
+                Toast.makeText(context, "Clicked", Toast.LENGTH_SHORT).show()
                 Log.e("TAG", "Item clicked")
                 val bundle = Bundle().apply {
-                    putSerializable("selected_article", model)
+                    putSerializable("selected_article", article)
                 }
                 findNavController().navigate(R.id.action_newsFragment_to_infoFragment, bundle)
             }
 
         })
+
         initRecyclerView()
         viewNewsList()
         setSearchView()

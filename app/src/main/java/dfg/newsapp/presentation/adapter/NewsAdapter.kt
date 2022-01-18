@@ -1,8 +1,13 @@
 package dfg.newsapp.presentation.adapter
 
+import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -12,25 +17,17 @@ import dfg.newsapp.databinding.NewsListItemBinding
 
 class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
 
-    inner class NewsViewHolder (private val binding: NewsListItemBinding)
+    private var onClickListener: OnClickListener? = null
+
+    inner class NewsViewHolder ( binding: NewsListItemBinding)
         : RecyclerView.ViewHolder(binding.root) {
-            fun bind(article: Article) {
-                binding.tvTitle.text = article.title
-                binding.tvDescription.text = article.description
-                binding.tvPublishedAt.text = article.publishedAt
-                binding.tvSource.text = article.source?.name
 
-                Glide.with(binding.ivArticleImage.context)
-                    .load(article.urlToImage)
-                    .into(binding.ivArticleImage)
-
-                binding.root.setOnClickListener {
-                    onItemClickListener?.let { it(article) }
-                }
-                binding.tvTitle.setOnClickListener {
-                    onClickListener?.onClick(position, article)
-                }
-            }
+            val cardView: CardView = binding.cvContent
+            val title: TextView = binding.tvTitle
+            val description: TextView = binding.tvDescription
+            val publishDate: TextView = binding.tvPublishedAt
+            val newsSource: TextView = binding.tvSource
+            val image: ImageView = binding.ivArticleImage
     }
 
     private val callback = object : DiffUtil.ItemCallback<Article>() {
@@ -45,7 +42,7 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
 
     val differ = AsyncListDiffer(this, callback)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder{
         val binding = NewsListItemBinding
             .inflate(LayoutInflater.from(parent.context), parent, false)
         return NewsViewHolder(binding)
@@ -53,23 +50,31 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
 
     override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
         val article = differ.currentList[position]
-        holder.bind(article)
+        val context = holder.cardView.context
+
+        holder.title.text = article.title
+        holder.description.text = article.description
+        holder.publishDate.text = article.publishedAt
+        holder.newsSource.text = article.source?.name
+
+        Glide.with(holder.image.context)
+            .load(article.urlToImage)
+            .into(holder.image)
+
+        holder.cardView.setOnClickListener {
+            onClickListener?.let {
+                onClickListener!!.onClick(position, article)
+            }
+        }
     }
 
     override fun getItemCount(): Int = differ.currentList.size
 
-    private var onItemClickListener : ((Article) -> Unit)? = null
-    fun setOnItemClickListener(listener: (Article) -> Unit) {
-        onItemClickListener = listener
+    fun setOnClickListener (onClickListener: OnClickListener) {
+        this.onClickListener = onClickListener
     }
 
-    private var onClickListener: OnNewClickListener? = null
-
-    fun setOnNewClickListener(onClick: OnNewClickListener) {
-        this.onClickListener = onClick
-    }
-
-    interface OnNewClickListener {
-        fun onClick(position: Int, model: Article)
+    interface OnClickListener {
+        fun onClick(position: Int, article: Article)
     }
 }
