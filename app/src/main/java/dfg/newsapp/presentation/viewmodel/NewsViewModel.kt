@@ -5,24 +5,22 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import dfg.newsapp.data.model.APIResponse
 import dfg.newsapp.data.model.Article
 import dfg.newsapp.data.util.Resource
-import dfg.newsapp.domain.usecase.GetNewsHeadlinesUseCase
-import dfg.newsapp.domain.usecase.GetSearchedNewsUseCase
-import dfg.newsapp.domain.usecase.SaveNewsUseCase
+import dfg.newsapp.domain.usecase.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import retrofit2.http.Query
 
 class NewsViewModel (
     private val app: Application,
     private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase,
     private val getSearchedNewsUseCase: GetSearchedNewsUseCase,
-    private val saveNewsUseCase: SaveNewsUseCase
+    private val saveNewsUseCase: SaveNewsUseCase,
+    private val getSavedNewsUseCase: GetSavedNewsUseCase,
+    private val deleteSavedNewsUseCase: DeleteSavedNewsUseCase
 ): AndroidViewModel(app) {
     val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
@@ -92,5 +90,15 @@ class NewsViewModel (
 
     fun saveArticleToLocalDB(article: Article) = viewModelScope.launch {
         saveNewsUseCase.execute(article)
+    }
+
+    fun getSavedNews() = liveData{
+        getSavedNewsUseCase.execute().collect {
+            emit(it)
+        }
+    }
+
+    fun deleteArticle(article: Article) = viewModelScope.launch {
+        deleteSavedNewsUseCase.execute(article)
     }
 }

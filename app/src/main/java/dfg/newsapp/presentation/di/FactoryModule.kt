@@ -5,9 +5,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dfg.newsapp.domain.usecase.GetNewsHeadlinesUseCase
-import dfg.newsapp.domain.usecase.GetSearchedNewsUseCase
-import dfg.newsapp.domain.usecase.SaveNewsUseCase
+import dfg.newsapp.domain.usecase.*
 import dfg.newsapp.presentation.viewmodel.NewsViewModelFactory
 import javax.inject.Singleton
 
@@ -21,13 +19,17 @@ class FactoryModule {
         application: Application,
         getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase,
         getSearchedNewsUseCase: GetSearchedNewsUseCase,
-        saveNewsUseCase: SaveNewsUseCase
+        saveNewsUseCase: SaveNewsUseCase,
+        getSavedNewsUseCase: GetSavedNewsUseCase,
+        deleteSavedNewsUseCase: DeleteSavedNewsUseCase
     ) : NewsViewModelFactory {
         return  NewsViewModelFactory(
             application,
             getNewsHeadlinesUseCase,
             getSearchedNewsUseCase,
-            saveNewsUseCase
+            saveNewsUseCase,
+            getSavedNewsUseCase,
+            deleteSavedNewsUseCase
         )
     }
 }

@@ -30,7 +30,7 @@ class NewsFragment : Fragment() {
 
     private lateinit var newsAdapter: NewsAdapter
 
-    private var country = "us"
+    private var country = "gb"
     private var page = 1
     private var pages = 0
     private var isLastPage = false
