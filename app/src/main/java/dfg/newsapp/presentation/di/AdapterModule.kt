@@ -1,5 +1,6 @@
 package dfg.newsapp.presentation.di
 
+import android.view.View
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

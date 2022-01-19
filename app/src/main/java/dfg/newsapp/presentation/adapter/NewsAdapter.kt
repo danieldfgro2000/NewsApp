@@ -1,12 +1,10 @@
 package dfg.newsapp.presentation.adapter
 
-import android.view.GestureDetector
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -17,18 +15,7 @@ import dfg.newsapp.databinding.NewsListItemBinding
 
 class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
 
-    private var onClickListener: OnClickListener? = null
-
-    inner class NewsViewHolder ( binding: NewsListItemBinding)
-        : RecyclerView.ViewHolder(binding.root) {
-
-            val cardView: CardView = binding.cvContent
-            val title: TextView = binding.tvTitle
-            val description: TextView = binding.tvDescription
-            val publishDate: TextView = binding.tvPublishedAt
-            val newsSource: TextView = binding.tvSource
-            val image: ImageView = binding.ivArticleImage
-    }
+    private var onItemClickListener : ((Article) -> Unit)? = null
 
     private val callback = object : DiffUtil.ItemCallback<Article>() {
         override fun areItemsTheSame(oldItem: Article, newItem: Article): Boolean {
@@ -50,7 +37,6 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
 
     override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
         val article = differ.currentList[position]
-        val context = holder.cardView.context
 
         holder.title.text = article.title
         holder.description.text = article.description
@@ -62,19 +48,26 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
             .into(holder.image)
 
         holder.cardView.setOnClickListener {
-            onClickListener?.let {
-                onClickListener!!.onClick(position, article)
+            onItemClickListener?.let {
+                it(article)
             }
         }
     }
 
     override fun getItemCount(): Int = differ.currentList.size
 
-    fun setOnClickListener (onClickListener: OnClickListener) {
-        this.onClickListener = onClickListener
+    fun setOnItemClickListener (listener : (Article) -> Unit) {
+        this.onItemClickListener = listener
     }
 
-    interface OnClickListener {
-        fun onClick(position: Int, article: Article)
+    inner class NewsViewHolder ( binding: NewsListItemBinding)
+        : RecyclerView.ViewHolder(binding.root) {
+
+        val cardView: CardView = binding.cvContent
+        val title: TextView = binding.tvTitle
+        val description: TextView = binding.tvDescription
+        val publishDate: TextView = binding.tvPublishedAt
+        val newsSource: TextView = binding.tvSource
+        val image: ImageView = binding.ivArticleImage
     }
 }
