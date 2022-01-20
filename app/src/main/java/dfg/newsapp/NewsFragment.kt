@@ -1,19 +1,18 @@
 package dfg.newsapp
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.SearchView
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import dfg.newsapp.data.model.Article
+import com.google.android.material.snackbar.Snackbar
 import dfg.newsapp.data.util.Resource
 import dfg.newsapp.databinding.FragmentNewsBinding
 import dfg.newsapp.presentation.adapter.NewsAdapter
@@ -39,12 +38,15 @@ class NewsFragment : Fragment() {
     private var isLastPage = false
     private var isScrolling = false
     private var isLoading = false
+    private lateinit var countrySpinner: Spinner
+    private lateinit var newsCategorySpinner: Spinner
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+
         return inflater.inflate(R.layout.fragment_news, container, false)
     }
 
@@ -54,15 +56,15 @@ class NewsFragment : Fragment() {
         viewModel = (activity as MainActivity).viewModel
         newsAdapter = (activity as MainActivity).newsAdapter
 
-        val countrySpinner = fragmentNewsBinding.spCountry
+        countrySpinner = fragmentNewsBinding.spCountry
         Spinners().setupSpinner(requireContext(), countrySpinner, countryList, viewModel.selectedCountry)
         viewModel.selectedCountry.observe(viewLifecycleOwner){
             viewNewsList()
         }
 
-        val newsTypeSpinner = fragmentNewsBinding.spNewsType
-        Spinners().setupSpinner(requireContext(), newsTypeSpinner, newsTypeList, viewModel.selectedNewsType)
-        viewModel.selectedNewsType.observe(viewLifecycleOwner){
+        newsCategorySpinner = fragmentNewsBinding.spNewsType
+        Spinners().setupSpinner(requireContext(), newsCategorySpinner, newsTypeList, viewModel.selectedCategory)
+        viewModel.selectedCategory.observe(viewLifecycleOwner){
             viewNewsList()
         }
 

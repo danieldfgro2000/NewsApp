@@ -25,13 +25,13 @@ class NewsViewModel (
 
     val selectedCountry = MutableLiveData<String>()
 
-    val selectedNewsType = MutableLiveData<String>()
+    val selectedCategory = MutableLiveData<String>()
 
     val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
     fun getNewsHeadLines(
         country: String = selectedCountry.value ?: "us",
-        category: String = selectedNewsType.value?: "business",
+        category: String = selectedCategory.value?: "business",
         page: Int
     ) = viewModelScope.launch(Dispatchers.IO) {
         newsHeadLines.postValue(Resource.Loading())

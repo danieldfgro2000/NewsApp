@@ -2,6 +2,7 @@ package dfg.newsapp.util
 
 import android.R
 import android.content.Context
+import android.preference.PreferenceManager
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -22,6 +23,7 @@ class Spinners {
             R.layout.simple_spinner_item,
             spinnerList
         )
+
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = spinnerAdapter
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
@@ -37,6 +39,7 @@ class Spinners {
                 ).show()
             }
         }
+        spinner.setSelection(spinnerList.indexOf(selectedItemLiveData.value))
     }
 }
 
