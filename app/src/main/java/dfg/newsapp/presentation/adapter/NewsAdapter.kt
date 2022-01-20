@@ -43,9 +43,11 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
         holder.publishDate.text = article.publishedAt
         holder.newsSource.text = article.source?.name
 
-        Glide.with(holder.image.context)
-            .load(article.urlToImage)
-            .into(holder.image)
+        if (!article.urlToImage.isNullOrBlank()){
+            Glide.with(holder.image.context)
+                .load(article.urlToImage)
+                .into(holder.image)
+        }
 
         holder.cardView.setOnClickListener {
             onItemClickListener?.let {

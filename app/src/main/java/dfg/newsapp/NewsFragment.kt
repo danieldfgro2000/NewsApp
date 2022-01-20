@@ -18,6 +18,9 @@ import dfg.newsapp.data.util.Resource
 import dfg.newsapp.databinding.FragmentNewsBinding
 import dfg.newsapp.presentation.adapter.NewsAdapter
 import dfg.newsapp.presentation.viewmodel.NewsViewModel
+import dfg.newsapp.util.Spinners
+import dfg.newsapp.util.countryList
+import dfg.newsapp.util.newsTypeList
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,13 +54,25 @@ class NewsFragment : Fragment() {
         viewModel = (activity as MainActivity).viewModel
         newsAdapter = (activity as MainActivity).newsAdapter
 
+        val countrySpinner = fragmentNewsBinding.spCountry
+        Spinners().setupSpinner(requireContext(), countrySpinner, countryList, viewModel.selectedCountry)
+        viewModel.selectedCountry.observe(viewLifecycleOwner){
+            viewNewsList()
+        }
+
+        val newsTypeSpinner = fragmentNewsBinding.spNewsType
+        Spinners().setupSpinner(requireContext(), newsTypeSpinner, newsTypeList, viewModel.selectedNewsType)
+        viewModel.selectedNewsType.observe(viewLifecycleOwner){
+            viewNewsList()
+        }
+
         initRecyclerView()
         viewNewsList()
         setSearchView()
     }
 
     private fun viewNewsList() {
-        viewModel.getNewsHeadLines(country, page)
+        viewModel.getNewsHeadLines( page = page )
         viewModel.newsHeadLines.observe(viewLifecycleOwner) { response ->
             when (response) {
                 is Resource.Success -> {
@@ -179,7 +194,7 @@ class NewsFragment : Fragment() {
             val shouldPaginate = !isLoading && !isLastPage && hasReachedToEnd && isScrolling
             if (shouldPaginate) {
                 page ++
-                viewModel.getNewsHeadLines(country, page)
+                viewModel.getNewsHeadLines(page = page)
                 isScrolling = false
             }
          }
