@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var factory: NewsViewModelFactory
     val newsViewModel: NewsViewModel by viewModels()
+
     @Inject
     lateinit var newsAdapter: NewsAdapter
 
@@ -30,14 +31,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
-        }
+        if (BuildConfig.DEBUG) { Timber.plant(Timber.DebugTree()) }
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
         val navController = navHostFragment.navController
         binding.bnvNews.setupWithNavController(navController)
-
-//        newsViewModel = ViewModelProvider(this, factory)[NewsViewModel::class.java]
     }
 }

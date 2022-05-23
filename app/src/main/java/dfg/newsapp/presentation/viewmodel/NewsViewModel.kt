@@ -18,28 +18,32 @@ import timber.log.Timber.Forest.e
 import javax.inject.Inject
 
 @HiltViewModel
-class NewsViewModel @Inject constructor (
+class NewsViewModel @Inject constructor(
     private val app: Application,
     private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase,
     private val getSearchedNewsUseCase: GetSearchedNewsUseCase,
     private val saveNewsUseCase: SaveNewsUseCase,
     private val getSavedNewsUseCase: GetSavedNewsUseCase,
     private val deleteSavedNewsUseCase: DeleteSavedNewsUseCase
-): AndroidViewModel(app) {
+) : AndroidViewModel(app) {
 
+    val previousCountry = MutableLiveData<String>()
     val selectedCountry = MutableLiveData<String>()
-
+    val previousCategory = MutableLiveData<String>()
     val selectedCategory = MutableLiveData<String>()
+
+    val lastFirstVisiblePosition = MutableLiveData<Int>()
 
     val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
+    private var previousTime: Long = 0
     fun getNewsHeadLines(
         country: String?,
         category: String?,
         page: Int
     ) = viewModelScope.launch(Dispatchers.IO) {
+        e("getting headlines, page = $page")
         newsHeadLines.postValue(Resource.Loading())
-        e("getting headlines")
         try {
             if (isNetworkAvailable(app)) {
                 val apiResult = getNewsHeadlinesUseCase.execute(country, category, page)
@@ -52,7 +56,7 @@ class NewsViewModel @Inject constructor (
         }
     }
 
-    private fun isNetworkAvailable(context: Context?) : Boolean {
+    private fun isNetworkAvailable(context: Context?): Boolean {
         if (context == null) return false
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -71,18 +75,18 @@ class NewsViewModel @Inject constructor (
                         return true
                     }
                 }
-            } else {
-                val activeNetworkInfo = connectivityManager.activeNetworkInfo
-                if(activeNetworkInfo != null && activeNetworkInfo.isConnected) {
-                    return true
-                }
+        } else {
+            val activeNetworkInfo = connectivityManager.activeNetworkInfo
+            if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
+                return true
             }
-        return false
         }
+        return false
+    }
 
     val searchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
-    fun searchNews (country: String, searchQuery: String, page: Int) = viewModelScope.launch {
+    fun searchNews(country: String, searchQuery: String, page: Int) = viewModelScope.launch {
         searchedNews.postValue(Resource.Loading())
 
         try {
@@ -105,7 +109,7 @@ class NewsViewModel @Inject constructor (
         saveNewsUseCase.execute(article)
     }
 
-    fun getSavedNews() = liveData{
+    fun getSavedNews() = liveData {
         getSavedNewsUseCase.execute().collect {
             emit(it)
         }

@@ -23,7 +23,6 @@ import dfg.newsapp.util.newsTypeList
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber.Forest.e
 
 
 class NewsFragment : Fragment() {
@@ -33,7 +32,6 @@ class NewsFragment : Fragment() {
 
     private lateinit var newsAdapter: NewsAdapter
 
-    private var country = "gb"
     private var page = 1
     private var pages = 0
     private var isLastPage = false
@@ -46,20 +44,18 @@ class NewsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-
         return inflater.inflate(R.layout.fragment_news, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         fragmentNewsBinding = FragmentNewsBinding.bind(view)
-//        viewModel = (activity as MainActivity).newsViewModel
+
         newsAdapter = (activity as MainActivity).newsAdapter
 
         initRecyclerView()
-//        viewNewsList()
         setSearchView()
+        viewNewsList()
 
         countrySpinner = fragmentNewsBinding.spCountry
         Spinners().setupSpinner(
@@ -68,13 +64,6 @@ class NewsFragment : Fragment() {
             countryList,
             newsViewModel.selectedCountry
         )
-        newsViewModel.selectedCountry.observe(viewLifecycleOwner) {
-            e("Country changed")
-            pages = 1
-            page = 0
-            viewNewsList(country = it, category = newsViewModel.selectedCategory.value)
-        }
-
         newsCategorySpinner = fragmentNewsBinding.spNewsType
         Spinners().setupSpinner(
             requireContext(),
@@ -82,16 +71,36 @@ class NewsFragment : Fragment() {
             newsTypeList,
             newsViewModel.selectedCategory
         )
-        newsViewModel.selectedCategory.observe(viewLifecycleOwner) {
-            e("Category changed")
+
+        newsViewModel.selectedCountry.observe(viewLifecycleOwner) {
             pages = 1
             page = 0
-            viewNewsList(category = it, country = newsViewModel.selectedCountry.value)
+            if (it != newsViewModel.previousCountry.value) {
+                newsViewModel.getNewsHeadLines(
+                    page = page,
+                    country = it,
+                    category = newsViewModel.selectedCategory.value
+                )
+                newsViewModel.previousCountry.value = it
+            }
+        }
+
+        newsViewModel.selectedCategory.observe(viewLifecycleOwner) {
+
+            pages = 1
+            page = 0
+            if (it != newsViewModel.previousCategory.value) {
+                newsViewModel.getNewsHeadLines(
+                    page = page,
+                    country = newsViewModel.selectedCountry.value,
+                    category = it
+                )
+                newsViewModel.previousCategory.value = it
+            }
         }
     }
 
-    private fun viewNewsList(country: String?, category: String?) {
-        newsViewModel.getNewsHeadLines(page = page, country = country, category = category)
+    private fun viewNewsList() {
         newsViewModel.newsHeadLines.observe(viewLifecycleOwner) { response ->
             when (response) {
                 is Resource.Success -> {
@@ -123,7 +132,11 @@ class NewsFragment : Fragment() {
         fragmentNewsBinding.svNews.setOnQueryTextListener(
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(p0: String?): Boolean {
-                    newsViewModel.searchNews(newsViewModel.selectedCountry.value?: "us", p0.toString(), page)
+                    newsViewModel.searchNews(
+                        newsViewModel.selectedCountry.value ?: "us",
+                        p0.toString(),
+                        page
+                    )
                     viewSearched()
                     return false
                 }
@@ -131,7 +144,11 @@ class NewsFragment : Fragment() {
                 override fun onQueryTextChange(p0: String?): Boolean {
                     MainScope().launch {
                         delay(2000)
-                        newsViewModel.searchNews(newsViewModel.selectedCountry.value?: "us", p0.toString(), page)
+                        newsViewModel.searchNews(
+                            newsViewModel.selectedCountry.value ?: "us",
+                            p0.toString(),
+                            page
+                        )
                         viewSearched()
                     }
                     return false
@@ -140,9 +157,10 @@ class NewsFragment : Fragment() {
 
         fragmentNewsBinding.svNews.setOnCloseListener {
             initRecyclerView()
-            viewNewsList(
+            newsViewModel.getNewsHeadLines(
+                country = newsViewModel.selectedCountry.value,
                 category = newsViewModel.selectedCategory.value,
-                country = newsViewModel.selectedCountry.value
+                page
             )
             false
         }

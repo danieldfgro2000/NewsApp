@@ -2,7 +2,6 @@ package dfg.newsapp.util
 
 import android.R
 import android.content.Context
-import android.preference.PreferenceManager
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -10,7 +9,10 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 
+
 class Spinners {
+
+    var inhibitSpinner: Boolean = false
 
     fun setupSpinner(
         context: Context,
@@ -24,8 +26,9 @@ class Spinners {
             spinnerList
         )
 
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         spinner.adapter = spinnerAdapter
+        spinner.setSelection(spinnerList.indexOf(selectedItemLiveData.value))
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 selectedItemLiveData.value = spinnerList[p2]
@@ -39,18 +42,17 @@ class Spinners {
                 ).show()
             }
         }
-        spinner.setSelection(spinnerList.indexOf(selectedItemLiveData.value))
     }
 }
 
-val countryList = mutableListOf<String>(
+val countryList = mutableListOf(
     "us",
     "gb",
     "de",
     "ro"
 )
 
-val newsTypeList = mutableListOf<String>(
+val newsTypeList = mutableListOf(
     "business",
     "entertainment",
     "general",
