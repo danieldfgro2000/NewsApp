@@ -31,7 +31,7 @@ class InfoFragment : Fragment() {
         val args: InfoFragmentArgs by navArgs()
         val article = args.selectedArticle
 
-        viewModel = (activity as MainActivity).viewModel
+        viewModel = (activity as MainActivity).newsViewModel
 
         fragmentInfoBinding.wvInfo.apply {
             webViewClient = WebViewClient()

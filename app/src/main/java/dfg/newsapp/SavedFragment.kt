@@ -1,14 +1,10 @@
 package dfg.newsapp
 
-import android.app.ProgressDialog.show
-import android.content.ClipData
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.view.accessibility.AccessibilityEventCompat.setAction
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,7 +32,7 @@ class SavedFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         fragmentSavedBinding = FragmentSavedBinding.bind(view)
-        viewModel = (activity as MainActivity).viewModel
+        viewModel = (activity as MainActivity).newsViewModel
         savedNewsAdapter = (activity as MainActivity).newsAdapter
 
         initRecyclerView()

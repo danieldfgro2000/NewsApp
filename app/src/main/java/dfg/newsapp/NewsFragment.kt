@@ -1,7 +1,6 @@
 package dfg.newsapp
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,10 +8,11 @@ import android.widget.AbsListView
 import android.widget.SearchView
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import dfg.newsapp.data.util.Resource
 import dfg.newsapp.databinding.FragmentNewsBinding
 import dfg.newsapp.presentation.adapter.NewsAdapter
@@ -23,11 +23,12 @@ import dfg.newsapp.util.newsTypeList
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber.Forest.e
 
 
 class NewsFragment : Fragment() {
 
-    private lateinit var viewModel: NewsViewModel
+    private val newsViewModel: NewsViewModel by activityViewModels()
     private lateinit var fragmentNewsBinding: FragmentNewsBinding
 
     private lateinit var newsAdapter: NewsAdapter
@@ -53,38 +54,54 @@ class NewsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         fragmentNewsBinding = FragmentNewsBinding.bind(view)
-        viewModel = (activity as MainActivity).viewModel
+//        viewModel = (activity as MainActivity).newsViewModel
         newsAdapter = (activity as MainActivity).newsAdapter
 
+        initRecyclerView()
+//        viewNewsList()
+        setSearchView()
+
         countrySpinner = fragmentNewsBinding.spCountry
-        Spinners().setupSpinner(requireContext(), countrySpinner, countryList, viewModel.selectedCountry)
-        viewModel.selectedCountry.observe(viewLifecycleOwner){
-            viewNewsList()
+        Spinners().setupSpinner(
+            requireContext(),
+            countrySpinner,
+            countryList,
+            newsViewModel.selectedCountry
+        )
+        newsViewModel.selectedCountry.observe(viewLifecycleOwner) {
+            e("Country changed")
+            pages = 1
+            page = 0
+            viewNewsList(country = it, category = newsViewModel.selectedCategory.value)
         }
 
         newsCategorySpinner = fragmentNewsBinding.spNewsType
-        Spinners().setupSpinner(requireContext(), newsCategorySpinner, newsTypeList, viewModel.selectedCategory)
-        viewModel.selectedCategory.observe(viewLifecycleOwner){
-            viewNewsList()
+        Spinners().setupSpinner(
+            requireContext(),
+            newsCategorySpinner,
+            newsTypeList,
+            newsViewModel.selectedCategory
+        )
+        newsViewModel.selectedCategory.observe(viewLifecycleOwner) {
+            e("Category changed")
+            pages = 1
+            page = 0
+            viewNewsList(category = it, country = newsViewModel.selectedCountry.value)
         }
-
-        initRecyclerView()
-        viewNewsList()
-        setSearchView()
     }
 
-    private fun viewNewsList() {
-        viewModel.getNewsHeadLines( page = page )
-        viewModel.newsHeadLines.observe(viewLifecycleOwner) { response ->
+    private fun viewNewsList(country: String?, category: String?) {
+        newsViewModel.getNewsHeadLines(page = page, country = country, category = category)
+        newsViewModel.newsHeadLines.observe(viewLifecycleOwner) { response ->
             when (response) {
                 is Resource.Success -> {
                     hideProgressbar()
                     response.data?.let {
                         newsAdapter.differ.submitList(it.articles.toList())
-                        if (it.totalResults % 20 == 0) {
-                            pages = it.totalResults / 20
+                        pages = if (it.totalResults % 20 == 0) {
+                            it.totalResults / 20
                         } else {
-                            pages = it.totalResults / 20 + 1
+                            it.totalResults / 20 + 1
                         }
                         isLastPage = page == pages
                     }
@@ -106,7 +123,7 @@ class NewsFragment : Fragment() {
         fragmentNewsBinding.svNews.setOnQueryTextListener(
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(p0: String?): Boolean {
-                    viewModel.searchNews("us", p0.toString(), page)
+                    newsViewModel.searchNews(newsViewModel.selectedCountry.value?: "us", p0.toString(), page)
                     viewSearched()
                     return false
                 }
@@ -114,35 +131,35 @@ class NewsFragment : Fragment() {
                 override fun onQueryTextChange(p0: String?): Boolean {
                     MainScope().launch {
                         delay(2000)
-                        viewModel.searchNews("us", p0.toString(), page)
+                        newsViewModel.searchNews(newsViewModel.selectedCountry.value?: "us", p0.toString(), page)
                         viewSearched()
                     }
                     return false
                 }
             })
 
-        fragmentNewsBinding.svNews.setOnCloseListener(
-            object : SearchView.OnCloseListener{
-                override fun onClose(): Boolean {
-                    initRecyclerView()
-                    viewNewsList()
-                    return false
-                }
-        } )
+        fragmentNewsBinding.svNews.setOnCloseListener {
+            initRecyclerView()
+            viewNewsList(
+                category = newsViewModel.selectedCategory.value,
+                country = newsViewModel.selectedCountry.value
+            )
+            false
+        }
     }
 
     private fun viewSearched() {
 
-        viewModel.searchedNews.observe(viewLifecycleOwner) { response ->
+        newsViewModel.searchedNews.observe(viewLifecycleOwner) { response ->
             when (response) {
                 is Resource.Success -> {
                     hideProgressbar()
                     response.data?.let {
                         newsAdapter.differ.submitList(it.articles.toList())
-                        if (it.totalResults % 20 == 0) {
-                            pages = it.totalResults / 20
+                        pages = if (it.totalResults % 20 == 0) {
+                            it.totalResults / 20
                         } else {
-                            pages = it.totalResults / 20 + 1
+                            it.totalResults / 20 + 1
                         }
                         isLastPage = page == pages
                     }
@@ -192,14 +209,18 @@ class NewsFragment : Fragment() {
             val visibleItems = layoutManager.childCount
             val topPosition = layoutManager.findFirstVisibleItemPosition()
 
-            val hasReachedToEnd = topPosition + visibleItems >= sizeOfTheCurrentList
+            val hasReachedToEnd = topPosition + visibleItems - 2 >= sizeOfTheCurrentList
             val shouldPaginate = !isLoading && !isLastPage && hasReachedToEnd && isScrolling
             if (shouldPaginate) {
-                page ++
-                viewModel.getNewsHeadLines(page = page)
+                page++
+                newsViewModel.getNewsHeadLines(
+                    page = page,
+                    country = newsViewModel.selectedCountry.value,
+                    category = newsViewModel.selectedCategory.value
+                )
                 isScrolling = false
             }
-         }
+        }
     }
 
     private fun showProgressBar() {

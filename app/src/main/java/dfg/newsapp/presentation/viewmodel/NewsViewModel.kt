@@ -6,6 +6,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.lifecycle.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dfg.newsapp.data.model.APIResponse
 import dfg.newsapp.data.model.Article
 import dfg.newsapp.data.util.Resource
@@ -13,8 +14,11 @@ import dfg.newsapp.domain.usecase.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import timber.log.Timber.Forest.e
+import javax.inject.Inject
 
-class NewsViewModel (
+@HiltViewModel
+class NewsViewModel @Inject constructor (
     private val app: Application,
     private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase,
     private val getSearchedNewsUseCase: GetSearchedNewsUseCase,
@@ -30,12 +34,12 @@ class NewsViewModel (
     val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
     fun getNewsHeadLines(
-        country: String = selectedCountry.value ?: "us",
-        category: String = selectedCategory.value?: "business",
+        country: String?,
+        category: String?,
         page: Int
     ) = viewModelScope.launch(Dispatchers.IO) {
         newsHeadLines.postValue(Resource.Loading())
-
+        e("getting headlines")
         try {
             if (isNetworkAvailable(app)) {
                 val apiResult = getNewsHeadlinesUseCase.execute(country, category, page)
