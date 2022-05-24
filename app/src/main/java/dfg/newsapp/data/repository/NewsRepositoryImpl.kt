@@ -8,6 +8,7 @@ import dfg.newsapp.data.util.Resource
 import dfg.newsapp.domain.repository.NewsRepository
 import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
+import timber.log.Timber.Forest.e
 
 class NewsRepositoryImpl(
     private val newsRemoteDataSource: NewsRemoteDataSource,
@@ -47,6 +48,11 @@ class NewsRepositoryImpl(
                 return Resource.Success(result)
             }
         }
+        if (!response.isSuccessful){
+            e("error message = ${response.message()}")
+            e("error code = ${response.code()}")
+        }
+
         return Resource.Error(response.message())
     }
 }
