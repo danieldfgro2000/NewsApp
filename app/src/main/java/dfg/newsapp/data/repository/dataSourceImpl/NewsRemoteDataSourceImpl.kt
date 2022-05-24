@@ -17,6 +17,10 @@ class NewsRemoteDataSourceImpl(
         searchQuery: String,
         page: Int
     ): Response<APIResponse> {
-        return newsApiService.getSearchedTopHeadlines(country, searchQuery, page)
+        return newsApiService.getSearchedTopHeadlines(
+//            country,
+            searchQuery = searchQuery,
+//            page
+        )
     }
 }

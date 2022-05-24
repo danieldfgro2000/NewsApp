@@ -219,7 +219,7 @@ class NewsFragment : Fragment() {
                 override fun onQueryTextChange(p0: String?): Boolean {
                     MainScope().launch {
                         delay(2000)
-                        if (!p0.isNullOrEmpty()) {
+                        if (!p0.isNullOrEmpty() && p0.length >= 5) {
                             newsViewModel.searchNews(
                                 newsViewModel.selectedCountry.value ?: "us",
                                 p0.toString(),

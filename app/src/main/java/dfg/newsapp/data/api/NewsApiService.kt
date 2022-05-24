@@ -22,12 +22,12 @@ interface NewsApiService {
 
     @GET("v2/everything")
     suspend fun getSearchedTopHeadlines(
-        @Query("country")
-        country: String,
+//        @Query("country")
+//        country: String,
         @Query("q")
         searchQuery: String,
-        @Query("page")
-        page: Int,
+//        @Query("page")
+//        page: Int,
         @Query("apiKey")
         apiKey: String = BuildConfig.API_KEY
     ) : Response<APIResponse>
