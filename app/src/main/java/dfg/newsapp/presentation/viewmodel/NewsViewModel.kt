@@ -32,11 +32,8 @@ class NewsViewModel @Inject constructor(
     val previousCategory = MutableLiveData<String>()
     val selectedCategory = MutableLiveData<String>()
 
-    val lastFirstVisiblePosition = MutableLiveData<Int>()
-
     val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
-    private var previousTime: Long = 0
     fun getNewsHeadLines(
         country: String?,
         category: String?,

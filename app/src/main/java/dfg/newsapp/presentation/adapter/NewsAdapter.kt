@@ -36,29 +36,29 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
-        val article = differ.currentList[position]
+        val article: Article? = differ.currentList[position]
 
-        holder.title.text = article.title
-        holder.description.text = article.description
-        holder.publishDate.text = article.publishedAt
-        holder.newsSource.text = article.source?.name
+        holder.title.text = article?.title
+        holder.description.text = article?.description
+        holder.publishDate.text = article?.publishedAt
+        holder.newsSource.text = article?.source?.name
 
-        if (!article.urlToImage.isNullOrBlank()){
+        if (!article?.urlToImage.isNullOrBlank()){
             Glide.with(holder.image.context)
-                .load(article.urlToImage)
+                .load(article?.urlToImage)
                 .into(holder.image)
         }
 
         holder.cardView.setOnClickListener {
             onItemClickListener?.let {
-                it(article)
+                article?.let { article -> it(article) }
             }
         }
     }
 
     override fun getItemCount(): Int = differ.currentList.size
 
-    fun setOnItemClickListener (listener : (Article) -> Unit) {
+    fun setOnItemClickListener (listener : (Article?) -> Unit) {
         this.onItemClickListener = listener
     }
 

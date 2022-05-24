@@ -21,7 +21,7 @@ class NetModule {
         val clientBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
         clientBuilder.addInterceptor(Interceptor { chain ->
             val request = chain.request()
-            e(request.toString())
+//            e(request.toString())
             chain.proceed(request)
         })
         return clientBuilder.build()

@@ -20,7 +20,7 @@ interface NewsApiService {
         apiKey: String = BuildConfig.API_KEY
     ) : Response<APIResponse>
 
-    @GET("v2/top-headlines")
+    @GET("v2/everything")
     suspend fun getSearchedTopHeadlines(
         @Query("country")
         country: String,
