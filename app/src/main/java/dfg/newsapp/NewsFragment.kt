@@ -20,9 +20,6 @@ import dfg.newsapp.presentation.viewmodel.NewsViewModel
 import dfg.newsapp.util.Spinners
 import dfg.newsapp.util.countryList
 import dfg.newsapp.util.newsTypeList
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import timber.log.Timber.Forest.e
 
 
@@ -57,7 +54,9 @@ class NewsFragment : Fragment() {
         initRecyclerView()
         setupSpinners()
         setSearchView()
-        viewNewsList()
+        observeTopHeadlines()
+        observeSearchedQuery()
+        observeSearchedNews()
     }
 
     private fun initRecyclerView() {
@@ -129,9 +128,8 @@ class NewsFragment : Fragment() {
             )
 
             selectedCountry.observe(viewLifecycleOwner) { country ->
-                pages = 1
-                page = 0
-                if (previousCountry.value.isNullOrEmpty()){
+
+                if (previousCountry.value.isNullOrEmpty()) {
                     previousCountry.value = country
                 }
                 if (country != previousCountry.value && !country.isNullOrEmpty()) {
@@ -147,8 +145,7 @@ class NewsFragment : Fragment() {
             }
 
             selectedCategory.observe(viewLifecycleOwner) { category ->
-                pages = 1
-                page = 0
+
                 if (previousCategory.value.isNullOrEmpty()) {
                     previousCategory.value = category
                     selectedCountry.value?.let { country ->
@@ -173,12 +170,14 @@ class NewsFragment : Fragment() {
         }
     }
 
-    private fun viewNewsList() {
+    private fun observeTopHeadlines() {
         newsViewModel.newsHeadLines.observe(viewLifecycleOwner) { response ->
             when (response) {
                 is Resource.Success -> {
                     hideProgressbar()
                     response.data?.let {
+                        pages = 1
+                        page = 0
                         newsAdapter.differ.submitList(it.articles.toList())
                         pages = if (it.totalResults % 20 == 0) {
                             it.totalResults / 20
@@ -206,27 +205,14 @@ class NewsFragment : Fragment() {
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(p0: String?): Boolean {
                     if (!p0.isNullOrEmpty()) {
-                        newsViewModel.searchNews(
-                            newsViewModel.selectedCountry.value ?: "us",
-                            p0.toString(),
-                            page
-                        )
-                        viewSearched()
+                        newsViewModel.searchedQuery.value = p0
                     }
                     return false
                 }
 
                 override fun onQueryTextChange(p0: String?): Boolean {
-                    MainScope().launch {
-                        delay(2000)
-                        if (!p0.isNullOrEmpty() && p0.length >= 5) {
-                            newsViewModel.searchNews(
-                                newsViewModel.selectedCountry.value ?: "us",
-                                p0.toString(),
-                                page
-                            )
-                            viewSearched()
-                        }
+                    if (!p0.isNullOrEmpty() && p0.length >= 5) {
+                        newsViewModel.searchedQuery.value = p0
                     }
                     return false
                 }
@@ -238,29 +224,64 @@ class NewsFragment : Fragment() {
         }
     }
 
-    private fun viewSearched() {
+    private fun observeSearchedQuery() {
 
-        newsViewModel.searchedNews.observe(viewLifecycleOwner) { response ->
-            when (response) {
-                is Resource.Success -> {
-                    hideProgressbar()
-                    response.data?.let {
-                        newsAdapter.differ.submitList(it.articles.toList())
-                        pages = if (it.totalResults % 20 == 0) {
-                            it.totalResults / 20
-                        } else {
-                            it.totalResults / 20 + 1
+        with(newsViewModel) {
+            searchedQuery.observe(viewLifecycleOwner) { searchedQuery ->
+
+                if (previousSearchedQuery.value.isNullOrEmpty()) {
+                    previousSearchedQuery.value = searchedQuery
+                    searchNews()
+                }
+
+                if (searchedQuery != previousSearchedQuery.value) {
+                    val previousTime = System.currentTimeMillis()
+                    if (coolDownSearch(previousTime)) searchNews()
+                }
+            }
+        }
+    }
+
+    private fun observeSearchedNews() {
+
+        with(newsViewModel) {
+            searchedNews.observe(viewLifecycleOwner) { response ->
+                when (response) {
+                    is Resource.Success -> {
+                        hideProgressbar()
+                        response.data?.let {
+                            pages = 1
+                            page = 0
+                            if (previousSearchedNews.value == null) {
+                                previousSearchedNews.value = response
+                                newsAdapter.differ.submitList(it.articles.toList())
+                            }
+
+                            if (response.data.articles.size != previousSearchedNews.value?.data?.articles?.size) {
+                                e("Searched news changed")
+                                e("Searched news changed response = ${response.data.articles.size}")
+                                e("Searched news changed previous = ${previousSearchedNews.value?.data?.articles?.size}")
+                                newsAdapter.differ.submitList(it.articles.toList())
+                                previousSearchedNews.value = response
+                            }
+
+                            pages = if (it.totalResults % 20 == 0) {
+                                it.totalResults / 20
+                            } else {
+                                it.totalResults / 20 + 1
+                            }
+                            isLastPage = page == pages
                         }
-                        isLastPage = page == pages
                     }
-                }
-                is Resource.Loading -> {
-                    showProgressBar()
-                }
-                is Resource.Error -> {
-                    hideProgressbar()
-                    response.message?.let {
-                        Toast.makeText(requireContext(), "Error: $it", Toast.LENGTH_SHORT).show()
+                    is Resource.Loading -> {
+                        showProgressBar()
+                    }
+                    is Resource.Error -> {
+                        hideProgressbar()
+                        response.message?.let {
+                            Toast.makeText(requireContext(), "Error: $it", Toast.LENGTH_SHORT)
+                                .show()
+                        }
                     }
                 }
             }

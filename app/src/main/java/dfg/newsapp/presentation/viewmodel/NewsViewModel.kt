@@ -12,7 +12,7 @@ import dfg.newsapp.data.model.Article
 import dfg.newsapp.data.util.Resource
 import dfg.newsapp.domain.usecase.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import timber.log.Timber.Forest.e
 import javax.inject.Inject
@@ -33,7 +33,6 @@ class NewsViewModel @Inject constructor(
     val selectedCategory = MutableLiveData<String>()
 
     val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
-
     fun getNewsHeadLines(
         country: String?,
         category: String?,
@@ -51,6 +50,62 @@ class NewsViewModel @Inject constructor(
         } catch (e: Exception) {
             newsHeadLines.postValue(Resource.Error(e.message.toString()))
         }
+    }
+
+    val searchedQuery = MutableLiveData<String>()
+    val previousSearchedQuery = MutableLiveData<String>()
+    val searchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
+    val previousSearchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
+
+    var previousTime: Long = 0
+
+    var elapsedTime: Long = 0
+    var coolDown: Long = 3000
+    fun coolDownSearch(currentTime: Long) : Boolean {
+        if (previousTime <= 1) {
+            previousTime = System.currentTimeMillis()
+        }
+
+        if (elapsedTime >= coolDown){
+            previousTime = System.currentTimeMillis()
+        }
+
+        elapsedTime = currentTime - previousTime
+        e("currentTime = $previousTime")
+        e("previousTime = $currentTime")
+        e("elapsedTime = $elapsedTime")
+
+        return elapsedTime >= coolDown
+    }
+    fun searchNews() = viewModelScope.launch(IO) {
+        searchedNews.postValue(Resource.Loading())
+        try {
+            if (isNetworkAvailable(app)) {
+                if (searchedQuery.value!!.length >= 5){
+                    e("Getting searched news")
+                    val response = getSearchedNewsUseCase.execute(searchedQuery.value)
+                    searchedNews.postValue(response)
+                }
+            } else {
+                searchedNews.postValue(Resource.Error("No iternet connection"))
+            }
+        } catch (e: java.lang.Exception) {
+            searchedNews.postValue(Resource.Error(e.message.toString()))
+        }
+    }
+
+    fun saveArticleToLocalDB(article: Article) = viewModelScope.launch {
+        saveNewsUseCase.execute(article)
+    }
+
+    fun getSavedNews() = liveData {
+        getSavedNewsUseCase.execute().collect {
+            emit(it)
+        }
+    }
+
+    fun deleteArticle(article: Article) = viewModelScope.launch {
+        deleteSavedNewsUseCase.execute(article)
     }
 
     private fun isNetworkAvailable(context: Context?): Boolean {
@@ -79,40 +134,5 @@ class NewsViewModel @Inject constructor(
             }
         }
         return false
-    }
-
-    val searchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
-
-    fun searchNews(country: String, searchQuery: String, page: Int) = viewModelScope.launch {
-        searchedNews.postValue(Resource.Loading())
-
-        try {
-            if (isNetworkAvailable(app)) {
-                val response = getSearchedNewsUseCase.execute(
-                    country,
-                    searchQuery,
-                    page
-                )
-                searchedNews.postValue(response)
-            } else {
-                searchedNews.postValue(Resource.Error("No iternet connection"))
-            }
-        } catch (e: java.lang.Exception) {
-            searchedNews.postValue(Resource.Error(e.message.toString()))
-        }
-    }
-
-    fun saveArticleToLocalDB(article: Article) = viewModelScope.launch {
-        saveNewsUseCase.execute(article)
-    }
-
-    fun getSavedNews() = liveData {
-        getSavedNewsUseCase.execute().collect {
-            emit(it)
-        }
-    }
-
-    fun deleteArticle(article: Article) = viewModelScope.launch {
-        deleteSavedNewsUseCase.execute(article)
     }
 }

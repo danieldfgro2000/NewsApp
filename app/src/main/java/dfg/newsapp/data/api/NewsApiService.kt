@@ -25,7 +25,7 @@ interface NewsApiService {
 //        @Query("country")
 //        country: String,
         @Query("q")
-        searchQuery: String,
+        searchQuery: String?,
 //        @Query("page")
 //        page: Int,
         @Query("apiKey")
