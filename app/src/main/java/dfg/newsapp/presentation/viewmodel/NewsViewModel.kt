@@ -13,7 +13,9 @@ import dfg.newsapp.data.util.Resource
 import dfg.newsapp.domain.usecase.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber.Forest.d
 import timber.log.Timber.Forest.e
 import javax.inject.Inject
 
@@ -37,7 +39,7 @@ class NewsViewModel @Inject constructor(
         country: String?,
         category: String?,
         page: Int
-    ) = viewModelScope.launch(Dispatchers.IO) {
+    ) = viewModelScope.launch(IO) {
         e("getting headlines, page = $page")
         newsHeadLines.postValue(Resource.Loading())
         try {
@@ -58,25 +60,32 @@ class NewsViewModel @Inject constructor(
     val previousSearchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
     var previousTime: Long = 0
+    var searchCounter = 0
+    fun coolDownSearch(startTime: Long) : Boolean {
 
-    var elapsedTime: Long = 0
-    var coolDown: Long = 3000
-    fun coolDownSearch(currentTime: Long) : Boolean {
-        if (previousTime <= 1) {
-            previousTime = System.currentTimeMillis()
-        }
+        var elapsedTime: Long = 0
+        val coolDown: Long = 10000
 
-        if (elapsedTime >= coolDown){
-            previousTime = System.currentTimeMillis()
-        }
+        if (previousTime <= 1)  previousTime = System.currentTimeMillis()
+        if (elapsedTime >= coolDown) previousTime = System.currentTimeMillis()
 
-        elapsedTime = currentTime - previousTime
-        e("currentTime = $previousTime")
-        e("previousTime = $currentTime")
-        e("elapsedTime = $elapsedTime")
+            viewModelScope.launch(IO) {
+                while (elapsedTime <= coolDown + 200) {
+
+                    elapsedTime = previousTime - startTime
+                    d("elapsedTime = $elapsedTime")
+
+                    delay(200)
+                    previousTime = System.currentTimeMillis()
+                }
+                e("searching.....")
+                searchCounter++
+                if (searchCounter == 1) searchNews()
+            }
 
         return elapsedTime >= coolDown
     }
+
     fun searchNews() = viewModelScope.launch(IO) {
         searchedNews.postValue(Resource.Loading())
         try {

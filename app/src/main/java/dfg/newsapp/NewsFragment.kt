@@ -235,8 +235,8 @@ class NewsFragment : Fragment() {
                 }
 
                 if (searchedQuery != previousSearchedQuery.value) {
-                    val previousTime = System.currentTimeMillis()
-                    if (coolDownSearch(previousTime)) searchNews()
+                    val startTime = System.currentTimeMillis()
+                    coolDownSearch(startTime)
                 }
             }
         }
