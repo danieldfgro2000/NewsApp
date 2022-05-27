@@ -91,22 +91,56 @@ class NewsFragment : Fragment() {
 
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
+            var isScrollingUp = false
+            var isScrollingDown = false
+
+            if(dy > 0) isScrollingDown = true
+            else isScrollingUp = true
+
             val layoutManager = fragmentNewsBinding.rvNews.layoutManager as LinearLayoutManager
             val sizeOfTheCurrentList = layoutManager.itemCount
             val visibleItems = layoutManager.childCount
+
             val topPosition = layoutManager.findFirstVisibleItemPosition()
-            e("top position = $topPosition")
+            val bottomPosition = layoutManager.findLastVisibleItemPosition()
+
+
+            fragmentNewsBinding.position = topPosition.toString()
+            fragmentNewsBinding.page = page.toString()
+            fragmentNewsBinding.pages = pages.toString()
+
+
+
 
             val hasReachedToEnd = topPosition + visibleItems >= sizeOfTheCurrentList
-            val shouldDownloadNextPage = !isLoading && !isLastPage && hasReachedToEnd && isScrolling
+
+//            val hasReachedToEnd = bottomPosition + 1 == sizeOfTheCurrentList
+            val hasReachedToTop = topPosition == 0
+
+            val shouldDownloadNextPage = !isLoading && !isLastPage && hasReachedToEnd && isScrolling && isScrollingDown
+            val shouldDownloadPreviousPage = !isLoading && hasReachedToTop && isScrolling && isScrollingUp && page >=2
+
             if (shouldDownloadNextPage) {
                 page++
+                e("page = $page")
                 newsViewModel.getNewsHeadLines(
                     page = page,
                     country = newsViewModel.selectedCountry.value,
                     category = newsViewModel.selectedCategory.value
                 )
                 isScrolling = false
+                recyclerView.smoothScrollToPosition(1)
+            }
+            if (shouldDownloadPreviousPage){
+                page--
+                e("page = $page")
+                newsViewModel.getNewsHeadLines(
+                    page = page,
+                    country = newsViewModel.selectedCountry.value,
+                    category = newsViewModel.selectedCategory.value
+                )
+                isScrolling = false
+                recyclerView.smoothScrollToPosition(sizeOfTheCurrentList - 3)
             }
         }
     }
@@ -177,8 +211,6 @@ class NewsFragment : Fragment() {
                 is Resource.Success -> {
                     hideProgressbar()
                     response.data?.let {
-                        pages = 1
-                        page = 0
                         newsAdapter.differ.submitList(it.articles.toList())
                         pages = if (it.totalResults % 20 == 0) {
                             it.totalResults / 20
@@ -261,8 +293,6 @@ class NewsFragment : Fragment() {
                     is Resource.Success -> {
                         hideProgressbar()
                         response.data?.let {
-                            pages = 1
-                            page = 0
                             if (previousSearchedNews.value == null) {
                                 previousSearchedNews.value = response
                                 newsAdapter.differ.submitList(it.articles.toList())

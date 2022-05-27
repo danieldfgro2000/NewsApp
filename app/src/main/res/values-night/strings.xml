@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="position">Position</string>
+    <string name="page">Page</string>
+    <string name="pages">Pages</string>
+</resources>
