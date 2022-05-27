@@ -95,10 +95,11 @@ class NewsFragment : Fragment() {
             val sizeOfTheCurrentList = layoutManager.itemCount
             val visibleItems = layoutManager.childCount
             val topPosition = layoutManager.findFirstVisibleItemPosition()
+            e("top position = $topPosition")
 
-            val hasReachedToEnd = topPosition + visibleItems - 2 >= sizeOfTheCurrentList
-            val shouldPaginate = !isLoading && !isLastPage && hasReachedToEnd && isScrolling
-            if (shouldPaginate) {
+            val hasReachedToEnd = topPosition + visibleItems >= sizeOfTheCurrentList
+            val shouldDownloadNextPage = !isLoading && !isLastPage && hasReachedToEnd && isScrolling
+            if (shouldDownloadNextPage) {
                 page++
                 newsViewModel.getNewsHeadLines(
                     page = page,
@@ -184,6 +185,7 @@ class NewsFragment : Fragment() {
                         } else {
                             it.totalResults / 20 + 1
                         }
+                        e("pages = $pages")
                         isLastPage = page == pages
                     }
                 }
@@ -267,9 +269,7 @@ class NewsFragment : Fragment() {
                             }
 
                             if (response.data.articles.size != previousSearchedNews.value?.data?.articles?.size) {
-                                e("Searched news changed")
-                                e("Searched news changed response = ${response.data.articles.size}")
-                                e("Searched news changed previous = ${previousSearchedNews.value?.data?.articles?.size}")
+
                                 newsAdapter.differ.submitList(it.articles.toList())
                                 previousSearchedNews.value = response
                             }
@@ -279,6 +279,7 @@ class NewsFragment : Fragment() {
                             } else {
                                 it.totalResults / 20 + 1
                             }
+                            e("pages = $pages")
                             isLastPage = page == pages
                         }
                     }

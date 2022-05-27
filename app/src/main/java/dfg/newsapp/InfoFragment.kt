@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
@@ -35,8 +36,15 @@ class InfoFragment : Fragment() {
 
         fragmentInfoBinding.wvInfo.apply {
             webViewClient = WebViewClient()
+
+            settings.useWideViewPort = true
+            settings.loadWithOverviewMode = true
+            settings.setSupportZoom(true)
+            settings.builtInZoomControls = true
+            settings.displayZoomControls = false
+
             if (article.url != null) {
-                    loadUrl(article.url)
+                loadUrl(article.url)
             }
         }
 
