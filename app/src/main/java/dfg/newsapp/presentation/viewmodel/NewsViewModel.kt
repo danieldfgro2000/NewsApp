@@ -11,11 +11,10 @@ import dfg.newsapp.data.model.APIResponse
 import dfg.newsapp.data.model.Article
 import dfg.newsapp.data.util.Resource
 import dfg.newsapp.domain.usecase.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber.Forest.d
 import timber.log.Timber.Forest.e
 import javax.inject.Inject
 
@@ -59,32 +58,27 @@ class NewsViewModel @Inject constructor(
     val searchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
     val previousSearchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
-    var previousTime: Long = 0
-    var searchCounter = 0
-    fun coolDownSearch(startTime: Long) : Boolean {
 
-        var elapsedTime: Long = 0
-        val coolDown: Long = 10000
-
-        if (previousTime <= 1)  previousTime = System.currentTimeMillis()
-        if (elapsedTime >= coolDown) previousTime = System.currentTimeMillis()
-
-            viewModelScope.launch(IO) {
-                while (elapsedTime <= coolDown + 200) {
-
-                    elapsedTime = previousTime - startTime
-                    d("elapsedTime = $elapsedTime")
-
-                    delay(200)
-                    previousTime = System.currentTimeMillis()
-                }
-                e("searching.....")
-                searchCounter++
-                if (searchCounter == 1) searchNews()
+    var notTyping = MutableLiveData<Boolean>()
+    fun counterSetup() {
+        var counter = 0
+        val coolDown = 10
+        notTyping.value = false
+        viewModelScope.launch(IO) {
+            while (counter < coolDown) {
+                delay(200)
+                counter++
+                e("counter = ${counter}")
+            }
+            e("out while")
+            viewModelScope.launch(Main) {
+                notTyping.value = true
             }
 
-        return elapsedTime >= coolDown
+        }
+        e("typing = ${notTyping.value}")
     }
+
 
     fun searchNews() = viewModelScope.launch(IO) {
         searchedNews.postValue(Resource.Loading())

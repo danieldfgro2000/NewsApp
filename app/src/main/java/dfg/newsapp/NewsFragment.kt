@@ -235,9 +235,18 @@ class NewsFragment : Fragment() {
                 }
 
                 if (searchedQuery != previousSearchedQuery.value) {
-                    val startTime = System.currentTimeMillis()
-                    coolDownSearch(startTime)
+                    counterSetup()
+                    observeTimer()
                 }
+            }
+        }
+    }
+
+    private fun observeTimer() {
+        with(newsViewModel){
+            notTyping.observe(viewLifecycleOwner){
+                e("typing = $it")
+//            if(it) newsViewModel.searchNews()
             }
         }
     }
