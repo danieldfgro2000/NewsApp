@@ -51,6 +51,15 @@ class NewsFragment : Fragment() {
 
         newsAdapter = (activity as MainActivity).newsAdapter
 
+        with(fragmentNewsBinding){
+            viewSearchVisible = false
+            iconSearchVisible = true
+            iconSearch.setOnClickListener {
+                viewSearchVisible = true
+                iconSearchVisible = false
+            }
+        }
+
         initRecyclerView()
         setupSpinners()
         setSearchView()
@@ -235,26 +244,30 @@ class NewsFragment : Fragment() {
     }
 
     private fun setSearchView() {
-        fragmentNewsBinding.svNews.setOnQueryTextListener(
-            object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(p0: String?): Boolean {
-                    if (!p0.isNullOrEmpty()) {
-                        newsViewModel.searchedQuery.value = p0
+        with(fragmentNewsBinding){
+            svNews.setOnQueryTextListener(
+                object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(p0: String?): Boolean {
+                        if (!p0.isNullOrEmpty()) {
+                            newsViewModel.searchedQuery.value = p0
+                        }
+                        return false
                     }
-                    return false
-                }
 
-                override fun onQueryTextChange(p0: String?): Boolean {
-                    if (!p0.isNullOrEmpty() && p0.length >= 5) {
-                        newsViewModel.searchedQuery.value = p0
+                    override fun onQueryTextChange(p0: String?): Boolean {
+                        if (!p0.isNullOrEmpty() && p0.length >= 5) {
+                            newsViewModel.searchedQuery.value = p0
+                        }
+                        return false
                     }
-                    return false
-                }
-            })
+                })
 
-        fragmentNewsBinding.svNews.setOnCloseListener {
-            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
-            false
+            svNews.setOnCloseListener {
+                Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+                viewSearchVisible = false
+                iconSearchVisible = true
+                false
+            }
         }
     }
 

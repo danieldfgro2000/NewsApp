@@ -6,6 +6,8 @@
 
 
     <data>
+        <import type="android.view.View"/>
+
         <variable
             name="position"
             type="String" />
@@ -17,6 +19,14 @@
         <variable
             name="pages"
             type="String" />
+
+        <variable
+            name="iconSearchVisible"
+            type="Boolean" />
+
+        <variable
+            name="viewSearchVisible"
+            type="Boolean" />
     </data>
 
 <androidx.constraintlayout.widget.ConstraintLayout
@@ -28,11 +38,27 @@
         android:id="@+id/svNews"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="@{viewSearchVisible ? View.VISIBLE : View.GONE}"
         android:background="@color/search_background"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_bias="0"
         app:layout_constraintBottom_toTopOf="@+id/spCountry"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/iconSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:padding="10dp"
+        android:visibility="@{iconSearchVisible ? View.VISIBLE : View.GONE}"
+        android:src="@drawable/ic_baseline_search_24"
+        app:layout_constraintTop_toTopOf="@id/spCountry"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/spCountry"
+        app:layout_constraintBottom_toBottomOf="@+id/spCountry"/>
 
     <Spinner
         android:id="@+id/spCountry"
@@ -41,7 +67,7 @@
         android:padding="20dp"
         android:backgroundTint="@color/design_default_color_secondary_variant"
         app:layout_constraintTop_toBottomOf="@id/svNews"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iconSearch"
         app:layout_constraintEnd_toStartOf="@+id/spNewsType"
         app:layout_constraintBottom_toTopOf="@+id/rvNews"/>
 
@@ -51,10 +77,10 @@
         android:layout_height="wrap_content"
         android:padding="20dp"
         android:backgroundTint="@color/design_default_color_secondary_variant"
-        app:layout_constraintTop_toBottomOf="@id/svNews"
+        app:layout_constraintTop_toTopOf="@id/spCountry"
         app:layout_constraintStart_toEndOf="@+id/spCountry"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/rvNews"/>
+        app:layout_constraintBottom_toBottomOf="@+id/spCountry"/>
 
     <LinearLayout
         android:id="@+id/llPosition"
