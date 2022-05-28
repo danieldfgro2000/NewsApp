@@ -60,7 +60,7 @@ class SavedFragment : Fragment() {
                 Snackbar.make(view, "Article Deleted", Snackbar.LENGTH_SHORT)
                     .apply {
                         setAction("Undo") {
-                            viewModel.saveArticleToLocalDB(article)
+                            viewModel.saveNewsToLocalDB(article)
                         }
                         show()
                     }

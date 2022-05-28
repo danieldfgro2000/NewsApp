@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
@@ -49,7 +48,7 @@ class InfoFragment : Fragment() {
         }
 
         fragmentInfoBinding.floatingActionButton.setOnClickListener {
-            viewModel.saveArticleToLocalDB(article)
+            viewModel.saveNewsToLocalDB(article)
             Snackbar.make(view, "Saved Successfully", Snackbar.LENGTH_LONG).show()
         }
     }

@@ -80,7 +80,6 @@ class NewsFragment : Fragment() {
         newsAdapter.setOnItemClickListener { article ->
 
             article?.let {
-                e("article = $article")
                 val bundle = Bundle().apply {
                     putSerializable("selected_article", article)
                 }
@@ -109,21 +108,13 @@ class NewsFragment : Fragment() {
             val layoutManager = fragmentNewsBinding.rvNews.layoutManager as LinearLayoutManager
             val sizeOfTheCurrentList = layoutManager.itemCount
             val visibleItems = layoutManager.childCount
-
-            val topPosition = layoutManager.findFirstVisibleItemPosition()
-            val bottomPosition = layoutManager.findLastVisibleItemPosition()
-
+            val topPosition = layoutManager.findFirstCompletelyVisibleItemPosition()
 
             fragmentNewsBinding.position = topPosition.toString()
             fragmentNewsBinding.page = page.toString()
             fragmentNewsBinding.pages = pages.toString()
 
-
-
-
             val hasReachedToEnd = topPosition + visibleItems >= sizeOfTheCurrentList
-
-//            val hasReachedToEnd = bottomPosition + 1 == sizeOfTheCurrentList
             val hasReachedToTop = topPosition == 0
 
             val shouldDownloadNextPage = !isLoading && !isLastPage && hasReachedToEnd && isScrolling && isScrollingDown
@@ -131,25 +122,23 @@ class NewsFragment : Fragment() {
 
             if (shouldDownloadNextPage) {
                 page++
-                e("page = $page")
                 newsViewModel.getNewsHeadLines(
                     page = page,
                     country = newsViewModel.selectedCountry.value,
                     category = newsViewModel.selectedCategory.value
                 )
                 isScrolling = false
-                recyclerView.smoothScrollToPosition(1)
+                recyclerView.scrollToPosition(1)
             }
             if (shouldDownloadPreviousPage){
                 page--
-                e("page = $page")
                 newsViewModel.getNewsHeadLines(
                     page = page,
                     country = newsViewModel.selectedCountry.value,
                     category = newsViewModel.selectedCategory.value
                 )
                 isScrolling = false
-                recyclerView.smoothScrollToPosition(sizeOfTheCurrentList - 3)
+                recyclerView.scrollToPosition(sizeOfTheCurrentList - visibleItems)
             }
         }
     }
@@ -170,13 +159,15 @@ class NewsFragment : Fragment() {
                 newsTypeList,
                 selectedCategory
             )
-
             selectedCountry.observe(viewLifecycleOwner) { country ->
 
                 if (previousCountry.value.isNullOrEmpty()) {
                     previousCountry.value = country
                 }
                 if (country != previousCountry.value && !country.isNullOrEmpty()) {
+                    page = 1
+                    e("page  = $page")
+                    fragmentNewsBinding.page = page.toString()
                     selectedCategory.value?.let { category ->
                         getNewsHeadLines(
                             page = page,
@@ -189,8 +180,10 @@ class NewsFragment : Fragment() {
             }
 
             selectedCategory.observe(viewLifecycleOwner) { category ->
-
                 if (previousCategory.value.isNullOrEmpty()) {
+                    page = 1
+                    e("page = $page")
+                    fragmentNewsBinding.page = page.toString()
                     previousCategory.value = category
                     selectedCountry.value?.let { country ->
                         getNewsHeadLines(
@@ -201,6 +194,9 @@ class NewsFragment : Fragment() {
                     }
                 }
                 if (category != previousCategory.value && !category.isNullOrEmpty()) {
+                    page = 1
+                    e("page = $page")
+                    fragmentNewsBinding.page = page.toString()
                     selectedCountry.value?.let { country ->
                         getNewsHeadLines(
                             page = page,

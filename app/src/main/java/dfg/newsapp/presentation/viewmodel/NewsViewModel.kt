@@ -97,7 +97,7 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    fun saveArticleToLocalDB(article: Article) = viewModelScope.launch {
+    fun saveNewsToLocalDB(article: Article) = viewModelScope.launch {
         saveNewsUseCase.execute(article)
     }
 
