@@ -4,6 +4,7 @@ import dfg.newsapp.data.api.NewsApiService
 import dfg.newsapp.data.model.APIResponse
 import dfg.newsapp.data.repository.dataSource.NewsRemoteDataSource
 import retrofit2.Response
+import timber.log.Timber.Forest.e
 
 class NewsRemoteDataSourceImpl(
     private val newsApiService: NewsApiService
@@ -13,6 +14,7 @@ class NewsRemoteDataSourceImpl(
     }
 
     override suspend fun getSearchedNews(searchQuery: String?, page: Int?): Response<APIResponse> {
+        e("page = $page")
         return newsApiService.getSearchedTopHeadlines(searchQuery = searchQuery, page = page)
     }
 }

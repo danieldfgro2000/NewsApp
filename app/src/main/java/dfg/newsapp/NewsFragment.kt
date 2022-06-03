@@ -11,6 +11,7 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -227,6 +228,9 @@ class NewsFragment : Fragment() {
                 is Resource.Success -> {
                     hideProgressbar()
                     response.data?.let {
+                        e("headlines count = ${it.articles.size}")
+                        newsViewModel.searchedNews.value = null
+                        e("searched news = ${newsViewModel.searchedNews.value}")
                         newsAdapter.differ.submitList(it.articles.toList())
                         pages = if (it.totalResults % 100 == 0) {
                             it.totalResults / 100
@@ -270,7 +274,9 @@ class NewsFragment : Fragment() {
                             delay(3000)
                             if (!p0.isNullOrEmpty()) {
                                 e("text = $p0")
-                                newsViewModel.searchedQuery.value = p0
+                                with(newsViewModel){
+                                    searchedQuery.value = p0
+                                }
                             }
                         }
                         return false
@@ -291,10 +297,14 @@ class NewsFragment : Fragment() {
             searchedQuery.observe(viewLifecycleOwner) { searchedQuery ->
                 if (previousSearchedQuery.value.isNullOrEmpty()) {
                     previousSearchedQuery.value = searchedQuery
+                    e("first search input")
                     searchNews(page)
                 }
 
                 if (searchedQuery != previousSearchedQuery.value) {
+                    e("search text changed")
+                    e("search text changed: previous = ${previousSearchedQuery.value}")
+                    e("search text changed: current = $searchedQuery")
                     searchNews(page)
                 }
             }
@@ -309,14 +319,25 @@ class NewsFragment : Fragment() {
                     is Resource.Success -> {
                         hideProgressbar()
                         response.data?.let {
+                            e("searched news count = ${it.articles.size}")
                             if (previousSearchedNews.value == null) {
+                                newsHeadLines.value = null
+                                e("headlines = ${newsHeadLines.value}")
                                 previousSearchedNews.value = response
                                 newsAdapter.differ.submitList(it.articles.toList())
                             }
 
                             if (response.data.articles.size != previousSearchedNews.value?.data?.articles?.size) {
+                                newsHeadLines.value = null
+                                e("headlines = ${newsHeadLines.value}")
                                 newsAdapter.differ.submitList(it.articles.toList())
                                 previousSearchedNews.value = response
+                            }
+
+                            if (response.data.articles.size == previousSearchedNews.value?.data?.articles?.size) {
+                                newsHeadLines.value = null
+                                e("headlines = ${newsHeadLines.value}")
+                                newsAdapter.differ.submitList(it.articles.toList())
                             }
 
                             pages = if (it.totalResults % 100 == 0) {

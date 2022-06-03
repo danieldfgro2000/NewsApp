@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import dfg.newsapp.data.model.Article
 import dfg.newsapp.databinding.NewsListItemBinding
+import timber.log.Timber.Forest.e
 
 class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
 
@@ -32,6 +33,8 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder{
         val binding = NewsListItemBinding
             .inflate(LayoutInflater.from(parent.context), parent, false)
+
+        e("received list size = ${differ.currentList.size}")
         return NewsViewHolder(binding)
     }
 
