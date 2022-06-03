@@ -58,35 +58,14 @@ class NewsViewModel @Inject constructor(
     val searchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
     val previousSearchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
-
-    var notTyping = MutableLiveData<Boolean>()
-    fun counterSetup() {
-        var counter = 0
-        val coolDown = 10
-        notTyping.value = false
-        viewModelScope.launch(IO) {
-            while (counter < coolDown) {
-                delay(200)
-                counter++
-                e("counter = ${counter}")
-            }
-            e("out while")
-            viewModelScope.launch(Main) {
-                notTyping.value = true
-            }
-
-        }
-        e("typing = ${notTyping.value}")
-    }
-
-
-    fun searchNews() = viewModelScope.launch(IO) {
+    fun searchNews(page: Int) = viewModelScope.launch(IO) {
         searchedNews.postValue(Resource.Loading())
         try {
             if (isNetworkAvailable(app)) {
                 if (searchedQuery.value!!.length >= 5){
                     e("Getting searched news")
-                    val response = getSearchedNewsUseCase.execute(searchedQuery.value)
+                    e("page = $page")
+                    val response = getSearchedNewsUseCase.execute(searchedQuery.value, page = page)
                     searchedNews.postValue(response)
                 }
             } else {

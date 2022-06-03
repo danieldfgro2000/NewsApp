@@ -1,6 +1,7 @@
 package dfg.newsapp
 
 import android.os.Bundle
+import android.provider.Contacts
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ import dfg.newsapp.presentation.viewmodel.NewsViewModel
 import dfg.newsapp.util.Spinners
 import dfg.newsapp.util.countryList
 import dfg.newsapp.util.newsTypeList
+import kotlinx.coroutines.*
 import timber.log.Timber.Forest.e
 
 
@@ -35,6 +37,8 @@ class NewsFragment : Fragment() {
     private var isLastPage = false
     private var isScrolling = false
     private var isLoading = false
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
+    private lateinit var textChangeCountDownJob: Job
     private lateinit var countrySpinner: Spinner
     private lateinit var newsCategorySpinner: Spinner
 
@@ -85,7 +89,6 @@ class NewsFragment : Fragment() {
                 }
                 findNavController().navigate(R.id.action_newsFragment_to_infoFragment, bundle)
             }
-
         }
     }
 
@@ -122,22 +125,30 @@ class NewsFragment : Fragment() {
 
             if (shouldDownloadNextPage) {
                 page++
-                newsViewModel.getNewsHeadLines(
-                    page = page,
-                    country = newsViewModel.selectedCountry.value,
-                    category = newsViewModel.selectedCategory.value
-                )
-                isScrolling = false
+                if (newsViewModel.searchedQuery.value.isNullOrEmpty()){
+                    newsViewModel.getNewsHeadLines(
+                        page = page,
+                        country = newsViewModel.selectedCountry.value,
+                        category = newsViewModel.selectedCategory.value
+                    )
+                    isScrolling = false
+                } else {
+                    newsViewModel.searchNews(page = page)
+                }
                 recyclerView.scrollToPosition(1)
             }
             if (shouldDownloadPreviousPage){
                 page--
-                newsViewModel.getNewsHeadLines(
-                    page = page,
-                    country = newsViewModel.selectedCountry.value,
-                    category = newsViewModel.selectedCategory.value
-                )
-                isScrolling = false
+                if (newsViewModel.searchedQuery.value.isNullOrEmpty()){
+                    newsViewModel.getNewsHeadLines(
+                        page = page,
+                        country = newsViewModel.selectedCountry.value,
+                        category = newsViewModel.selectedCategory.value
+                    )
+                    isScrolling = false
+                } else {
+                    newsViewModel.searchNews(page = page)
+                }
                 recyclerView.scrollToPosition(sizeOfTheCurrentList - visibleItems)
             }
         }
@@ -217,10 +228,10 @@ class NewsFragment : Fragment() {
                     hideProgressbar()
                     response.data?.let {
                         newsAdapter.differ.submitList(it.articles.toList())
-                        pages = if (it.totalResults % 20 == 0) {
-                            it.totalResults / 20
+                        pages = if (it.totalResults % 100 == 0) {
+                            it.totalResults / 100
                         } else {
-                            it.totalResults / 20 + 1
+                            it.totalResults / 100 + 1
                         }
                         e("pages = $pages")
                         isLastPage = page == pages
@@ -251,15 +262,22 @@ class NewsFragment : Fragment() {
                     }
 
                     override fun onQueryTextChange(p0: String?): Boolean {
-                        if (!p0.isNullOrEmpty() && p0.length >= 5) {
-                            newsViewModel.searchedQuery.value = p0
+
+                        if (::textChangeCountDownJob.isInitialized) {
+                            textChangeCountDownJob.cancel()
+                        }
+                        textChangeCountDownJob = coroutineScope.launch {
+                            delay(3000)
+                            if (!p0.isNullOrEmpty()) {
+                                e("text = $p0")
+                                newsViewModel.searchedQuery.value = p0
+                            }
                         }
                         return false
                     }
                 })
 
             svNews.setOnCloseListener {
-                Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
                 viewSearchVisible = false
                 iconSearchVisible = true
                 false
@@ -271,25 +289,14 @@ class NewsFragment : Fragment() {
 
         with(newsViewModel) {
             searchedQuery.observe(viewLifecycleOwner) { searchedQuery ->
-
                 if (previousSearchedQuery.value.isNullOrEmpty()) {
                     previousSearchedQuery.value = searchedQuery
-                    searchNews()
+                    searchNews(page)
                 }
 
                 if (searchedQuery != previousSearchedQuery.value) {
-                    counterSetup()
-                    observeTimer()
+                    searchNews(page)
                 }
-            }
-        }
-    }
-
-    private fun observeTimer() {
-        with(newsViewModel){
-            notTyping.observe(viewLifecycleOwner){
-                e("typing = $it")
-//            if(it) newsViewModel.searchNews()
             }
         }
     }
@@ -308,15 +315,14 @@ class NewsFragment : Fragment() {
                             }
 
                             if (response.data.articles.size != previousSearchedNews.value?.data?.articles?.size) {
-
                                 newsAdapter.differ.submitList(it.articles.toList())
                                 previousSearchedNews.value = response
                             }
 
-                            pages = if (it.totalResults % 20 == 0) {
-                                it.totalResults / 20
+                            pages = if (it.totalResults % 100 == 0) {
+                                it.totalResults / 100
                             } else {
-                                it.totalResults / 20 + 1
+                                it.totalResults / 100 + 1
                             }
                             e("pages = $pages")
                             isLastPage = page == pages
