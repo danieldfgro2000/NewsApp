@@ -28,10 +28,6 @@ interface NewsApiService {
 //        country: String,
         @Query("q")
         searchQuery: String?,
-        @Query("pageSize")
-        pageSize: Int = 100,
-        @Query("page")
-        page: Int?,
         @Query("apiKey")
         apiKey: String = BuildConfig.API_KEY
     ) : Response<APIResponse>

@@ -58,14 +58,13 @@ class NewsViewModel @Inject constructor(
     val searchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
     val previousSearchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
-    fun searchNews(page: Int) = viewModelScope.launch(IO) {
+    fun searchNews() = viewModelScope.launch(IO) {
         searchedNews.postValue(Resource.Loading())
         try {
             if (isNetworkAvailable(app)) {
                 if (searchedQuery.value!!.length >= 5){
                     e("Getting searched news")
-                    e("page = $page")
-                    val response = getSearchedNewsUseCase.execute(searchedQuery.value, page = page)
+                    val response = getSearchedNewsUseCase.execute(searchedQuery.value)
                     searchedNews.postValue(response)
                 }
             } else {

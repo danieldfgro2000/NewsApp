@@ -7,6 +7,6 @@ interface NewsRemoteDataSource {
 
     suspend fun getTopHeadlines(country: String?, category: String?, page: Int) : Response<APIResponse>
 
-    suspend fun getSearchedNews(searchQuery: String?, page: Int?) : Response<APIResponse>
+    suspend fun getSearchedNews(searchQuery: String?) : Response<APIResponse>
 
 }

@@ -134,7 +134,7 @@ class NewsFragment : Fragment() {
                     )
                     isScrolling = false
                 } else {
-                    newsViewModel.searchNews(page = page)
+                    newsViewModel.searchNews()
                 }
                 recyclerView.scrollToPosition(1)
             }
@@ -148,7 +148,7 @@ class NewsFragment : Fragment() {
                     )
                     isScrolling = false
                 } else {
-                    newsViewModel.searchNews(page = page)
+                    newsViewModel.searchNews()
                 }
                 recyclerView.scrollToPosition(sizeOfTheCurrentList - visibleItems)
             }
@@ -298,14 +298,14 @@ class NewsFragment : Fragment() {
                 if (previousSearchedQuery.value.isNullOrEmpty()) {
                     previousSearchedQuery.value = searchedQuery
                     e("first search input")
-                    searchNews(page)
+                    searchNews()
                 }
 
                 if (searchedQuery != previousSearchedQuery.value) {
                     e("search text changed")
                     e("search text changed: previous = ${previousSearchedQuery.value}")
                     e("search text changed: current = $searchedQuery")
-                    searchNews(page)
+                    searchNews()
                 }
             }
         }
