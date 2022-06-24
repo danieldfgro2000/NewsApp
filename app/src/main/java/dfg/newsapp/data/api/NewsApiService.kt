@@ -24,8 +24,8 @@ interface NewsApiService {
 
     @GET("v2/everything")
     suspend fun getSearchedTopHeadlines(
-//        @Query("country")
-//        country: String,
+        @Query("language")
+        language: String = "en",
         @Query("q")
         searchQuery: String?,
         @Query("apiKey")
