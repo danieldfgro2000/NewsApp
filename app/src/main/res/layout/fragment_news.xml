@@ -32,7 +32,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".NewsFragment">
+    tools:context=".ui.NewsFragment">
 
     <SearchView
         android:id="@+id/svNews"

@@ -1,7 +1,6 @@
-package dfg.newsapp
+package dfg.newsapp.ui
 
 import android.os.Bundle
-import android.provider.Contacts
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,10 +10,10 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dfg.newsapp.R
 import dfg.newsapp.data.util.Resource
 import dfg.newsapp.databinding.FragmentNewsBinding
 import dfg.newsapp.presentation.adapter.NewsAdapter

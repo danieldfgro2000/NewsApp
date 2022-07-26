@@ -1,12 +1,13 @@
-package dfg.newsapp
+package dfg.newsapp.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import dagger.hilt.android.AndroidEntryPoint
+import dfg.newsapp.BuildConfig
+import dfg.newsapp.R
 import dfg.newsapp.databinding.ActivityMainBinding
 import dfg.newsapp.presentation.adapter.NewsAdapter
 import dfg.newsapp.presentation.viewmodel.NewsViewModel

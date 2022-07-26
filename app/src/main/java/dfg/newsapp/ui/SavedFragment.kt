@@ -1,4 +1,4 @@
-package dfg.newsapp
+package dfg.newsapp.ui
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import dfg.newsapp.R
 import dfg.newsapp.databinding.FragmentSavedBinding
 import dfg.newsapp.presentation.adapter.NewsAdapter
 import dfg.newsapp.presentation.viewmodel.NewsViewModel

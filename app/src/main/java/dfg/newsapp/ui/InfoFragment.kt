@@ -1,4 +1,4 @@
-package dfg.newsapp
+package dfg.newsapp.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +8,7 @@ import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.snackbar.Snackbar
+import dfg.newsapp.R
 import dfg.newsapp.databinding.FragmentInfoBinding
 import dfg.newsapp.presentation.viewmodel.NewsViewModel
 
